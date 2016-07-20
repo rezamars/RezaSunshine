@@ -50,12 +50,12 @@ public class MainActivity extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-
+        //click on settings
         if (id == R.id.action_settings) {
             startActivity(new Intent(this,SettingsActivity.class));
             return true;
         }
-
+        //click on map
         if (id == R.id.action_map) {
             openPreferredLocationInMap();
             return true;
