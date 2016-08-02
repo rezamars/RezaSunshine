@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.widget.CursorAdapter;
 import android.text.format.Time;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -83,6 +84,7 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
     static final int COL_COORD_LONG = 8;
 
     public MainActivityFragment() {
+
     }
 
 
@@ -90,6 +92,7 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+
     }
 
 
@@ -138,7 +141,8 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
         // The CursorAdapter will take data from our cursor and populate the ListView
         // However, we cannot use FLAG_AUTO_REQUERY since it is deprecated, so we will end
         // up with an empty list the first time we run.
-        mForecastAdapter = new ForecastAdapter(getActivity(), cur, 0);
+        // REZA:::: changed cursor send to "null" ->
+        mForecastAdapter = new ForecastAdapter(getActivity(), null, 0);
 
         ListView listView = (ListView)rootView.findViewById(R.id.listview_forecast);
         listView.setAdapter(mForecastAdapter);
@@ -212,5 +216,27 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
     public void onLoaderReset(Loader<Cursor> loader) {
         mForecastAdapter.swapCursor(null);
     }
+
+    /*
+    @Override
+    public void onResume() {
+        super.onResume();
+        //MainActivity ma = new MainActivity();
+        String location = Utility.getPreferredLocation(getActivity());
+        // update the location in our second pane using the fragment manager
+
+        //if (location != null && !location.equals(getActivity().getmLocation())) {
+            //MainActivityFragment ff = (MainActivityFragment)getSupportFragmentManager().findFragmentByTag(FORECASTFRAGMENT_TAG);
+            //if ( null != ff ) {
+        if (location != null){
+            onLocationChanged();
+            MainActivity.mLocation = location;
+        }
+
+            //}
+
+        //}
+    }
+    */
 }
 

@@ -19,13 +19,23 @@ public class MainActivity extends AppCompatActivity {
     private final String LOG_TAG = MainActivity.class.getSimpleName();
     private final String FORECASTFRAGMENT_TAG = "FFTAG";
     private String mLocation;
+    //public MainActivity ma = this;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         mLocation = Utility.getPreferredLocation(this);
+
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
+
+        /*
+        if (savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.fragment, new MainActivityFragment(), FORECASTFRAGMENT_TAG)
+                    .commit();
+        }*/
+
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -38,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
+
 
         /*
         if (savedInstanceState == null) {
@@ -118,4 +129,23 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+//    public String getmLocation()
+//    {
+//       return mLocation;
+//    }
+//
+//    public void setmLocation(String loc)
+//    {
+//        mLocation = loc;
+//    }
+//
+//    public MainActivity getma()
+//    {
+//        return ma;
+//    }
+//
+//    public void setma(MainActivity ma)
+//    {
+//        this.ma = ma;
+//    }
 }
