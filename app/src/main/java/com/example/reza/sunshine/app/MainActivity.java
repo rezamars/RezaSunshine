@@ -14,49 +14,77 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MainActivityFragment.Callback{
 
     private final String LOG_TAG = MainActivity.class.getSimpleName();
     private final String FORECASTFRAGMENT_TAG = "FFTAG";
     private String mLocation;
-    //public MainActivity ma = this;
+    private static final String DETAILFRAGMENT_TAG = "DFTAG";
+    private boolean mTwoPane;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        mLocation = Utility.getPreferredLocation(this);
+
 
         super.onCreate(savedInstanceState);
-
+        mLocation = Utility.getPreferredLocation(this);
         setContentView(R.layout.activity_main);
 
         /*
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.fragment, new MainActivityFragment(), FORECASTFRAGMENT_TAG)
+                    .add(R.id.fragment_forecast, new MainActivityFragment(), FORECASTFRAGMENT_TAG)
                     .commit();
         }*/
 
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+        //Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        //setSupportActionBar(toolbar);
+
+        //FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+
+
+
+        if (findViewById(R.id.weather_detail_container) != null) {
+
+
+            // The detail container view will be present only in the large-screen layouts
+            // (res/layout-sw600dp). If this view is present, then the activity should be
+            // in two-pane mode.
+            mTwoPane = true;
+
+            /*
+            if (savedInstanceState == null) {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_forecast, new MainActivityFragment(), FORECASTFRAGMENT_TAG)
+                        .commit();
+            }*/
+            // In two-pane mode, show the detail view in this activity by
+            // adding or replacing the detail fragment using a
+            // fragment transaction.
+            if (savedInstanceState == null) {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.weather_detail_container, new DetailActivityFragment(), DETAILFRAGMENT_TAG)
+                        .commit();
             }
-        });
+        } else {
 
-
-        /*
-        if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.fragment, new MainActivityFragment(), FORECASTFRAGMENT_TAG)
-                    .commit();
+            /*fab.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                            .setAction("Action", null).show();
+                }
+            });
+            */
+            mTwoPane = false;
+            getSupportActionBar().setElevation(0f);
         }
-        */
+
+        MainActivityFragment forecastFragment =  ((MainActivityFragment)getSupportFragmentManager()
+                .findFragmentById(R.id.fragment_forecast));
+        forecastFragment.setUseTodayLayout(!mTwoPane);
     }
 
     @Override
@@ -121,31 +149,38 @@ public class MainActivity extends AppCompatActivity {
         String location = Utility.getPreferredLocation( this );
         // update the location in our second pane using the fragment manager
         if (location != null && !location.equals(mLocation)) {
-            MainActivityFragment ff = (MainActivityFragment)getSupportFragmentManager().findFragmentByTag(FORECASTFRAGMENT_TAG);
+            MainActivityFragment ff = (MainActivityFragment)getSupportFragmentManager().findFragmentById(R.id.fragment_forecast);
             if ( null != ff ) {
                 ff.onLocationChanged();
+            }
+            DetailActivityFragment df = (DetailActivityFragment)getSupportFragmentManager().findFragmentByTag(DETAILFRAGMENT_TAG);
+            if ( null != df ) {
+                df.onLocationChanged(location);
             }
             mLocation = location;
         }
     }
 
-//    public String getmLocation()
-//    {
-//       return mLocation;
-//    }
-//
-//    public void setmLocation(String loc)
-//    {
-//        mLocation = loc;
-//    }
-//
-//    public MainActivity getma()
-//    {
-//        return ma;
-//    }
-//
-//    public void setma(MainActivity ma)
-//    {
-//        this.ma = ma;
-//    }
+    @Override
+    public void onItemSelected(Uri contentUri) {
+        if (mTwoPane) {
+            // In two-pane mode, show the detail view in this activity by
+            // adding or replacing the detail fragment using a
+            // fragment transaction.
+            Bundle args = new Bundle();
+            args.putParcelable(DetailActivityFragment.DETAIL_URI, contentUri);
+
+            DetailActivityFragment fragment = new DetailActivityFragment();
+            fragment.setArguments(args);
+
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.weather_detail_container, fragment, DETAILFRAGMENT_TAG)
+                    .commit();
+        } else {
+            Intent intent = new Intent(this, DetailActivity.class)
+                    .setData(contentUri);
+            startActivity(intent);
+        }
+    }
+
 }
