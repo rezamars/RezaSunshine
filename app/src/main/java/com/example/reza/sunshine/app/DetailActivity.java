@@ -68,9 +68,6 @@ public class DetailActivity extends AppCompatActivity {
             return true;
         }
 
-        if (id==android.R.id.home) {
-            //finish();
-        }
 
         return super.onOptionsItemSelected(item);
     }
