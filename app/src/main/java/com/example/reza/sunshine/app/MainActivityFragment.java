@@ -1,5 +1,8 @@
 package com.example.reza.sunshine.app;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
@@ -27,6 +30,8 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.example.reza.sunshine.app.data.WeatherContract;
+import com.example.reza.sunshine.app.service.SunshineService;
+import com.example.reza.sunshine.app.sync.SunshineSyncAdapter;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -48,6 +53,7 @@ import java.util.List;
  */
 public class MainActivityFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>{
 
+    public static final String LOG_TAG = MainActivityFragment.class.getSimpleName();
     private static final int FORECAST_LOADER = 0;
     private ForecastAdapter mForecastAdapter;
     private ListView mListView;
@@ -121,6 +127,11 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
         int id = item.getItemId();
         if (id == R.id.action_refresh){
             updateWeather();
+            return true;
+        }
+
+        if (id == R.id.action_map) {
+            openPreferredLocationInMap();
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -220,9 +231,31 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
         //String location = prefs.getString(getString(R.string.pref_location_key),
         //        getString(R.string.pref_location_default));
 
-        FetchWeatherTask weatherTask = new FetchWeatherTask(getActivity());
+        /*FetchWeatherTask weatherTask = new FetchWeatherTask(getActivity());
         String location = Utility.getPreferredLocation(getActivity());
         weatherTask.execute(location);
+        */
+
+        /*Intent intent = new Intent(getActivity(), SunshineService.class);
+                intent.putExtra(SunshineService.LOCATION_QUERY_EXTRA,
+                                Utility.getPreferredLocation(getActivity()));
+                getActivity().startService(intent);
+        */
+
+
+        /*
+        Intent alarmIntent = new Intent(getActivity(), SunshineService.AlarmReceiver.class);
+        alarmIntent.putExtra(SunshineService.LOCATION_QUERY_EXTRA, Utility.getPreferredLocation(getActivity()));
+        //Wrap in a pending intent which only fires once.
+        PendingIntent pi = PendingIntent.getBroadcast(getActivity(), 0,alarmIntent,PendingIntent.FLAG_ONE_SHOT);//getBroadcast(context, 0, i, 0);
+        AlarmManager am=(AlarmManager)getActivity().getSystemService(Context.ALARM_SERVICE);
+        //Set the AlarmManager to wake up the system.
+        am.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 5000, pi);
+        */
+        SunshineSyncAdapter.syncImmediately(getActivity());
+        //SunshineSyncAdapter ssa = new SunshineSyncAdapter(getContext(),true);
+        //ssa.syncImmediately(getContext());
+
     }
 
     @Override
@@ -281,5 +314,31 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
             mForecastAdapter.setUseTodayLayout(mUseTodayLayout);
         }
     }
+
+    private void openPreferredLocationInMap() {
+        // Using the URI scheme for showing a location found on a map.  This super-handy
+        // intent can is detailed in the "Common Intents" page of Android's developer site:
+        // http://developer.android.com/guide/components/intents-common.html#Maps
+        if ( null != mForecastAdapter ) {
+            Cursor c = mForecastAdapter.getCursor();
+            if ( null != c ) {
+                c.moveToPosition(0);
+                String posLat = c.getString(COL_COORD_LAT);
+                String posLong = c.getString(COL_COORD_LONG);
+                Uri geoLocation = Uri.parse("geo:" + posLat + "," + posLong);
+
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(geoLocation);
+
+                if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
+                    startActivity(intent);
+                } else {
+                    Log.d(LOG_TAG, "Couldn't call " + geoLocation.toString() + ", no receiving apps installed!");
+                }
+            }
+
+        }
+    }
+
 }
 
